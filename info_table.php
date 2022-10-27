@@ -27,12 +27,11 @@ require_once($CFG->libdir . '/tablelib.php');
 
 class enrol_apply_info_table extends table_sql {
 
+    // TODO refactor $is_collapsible to iscollapsible
     public $is_collapsible = false;
 
     public function __construct($enrolid = null) {
         parent::__construct('enrol_apply_info_table');
-
-        global $DB;
 
         $sqlwhere = 'ue.status != 0';
         $sqlparams = array();

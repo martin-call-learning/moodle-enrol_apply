@@ -22,9 +22,10 @@
  * @author     Johannes Burk <johannes.burk@sudile.com>
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 class enrol_apply_renderer extends plugin_renderer_base {
+
+    // TODO delete this file or make smthing with these echos.
+
     public function manage_page($table, $manageurl, $instance) {
         echo $this->header();
         echo $this->heading(get_string('confirmusers', 'enrol_apply'));
@@ -69,11 +70,11 @@ class enrol_apply_renderer extends plugin_renderer_base {
         echo html_writer::end_tag('form');
     }
 
-    public function info_page($table, $manageurl,$instance) {
+    public function info_page($table, $manageurl, $instance) {
         echo $this->header();
         echo $this->heading(get_string('submitted_info', 'enrol_apply'));
         echo get_string('submitted_info', 'enrol_apply');
-        $this->info_form($table, $manageurl,$instance);
+        $this->info_form($table, $manageurl, $instance);
         echo $this->footer();
     }
 
@@ -101,18 +102,17 @@ class enrol_apply_renderer extends plugin_renderer_base {
         $table->out(50, true);
     }
 
-    public function info_form($table, $manageurl,$instance) {
+    public function info_form($table, $manageurl, $instance) {
         echo html_writer::start_tag('form', array(
             'id' => 'enrol_apply_info_form',
             'method' => 'post',
             'action' => $manageurl->out()));
 
-        $this->info_table($table,$instance);
+        $this->info_table($table, $instance);
 
         if ($table->totalrows > 0) {
             echo html_writer::empty_tag('br');
             echo html_writer::start_tag('div', array('class' => 'formaction'));
-
 
             echo html_writer::end_tag('div');
 
@@ -121,10 +121,8 @@ class enrol_apply_renderer extends plugin_renderer_base {
         echo html_writer::end_tag('form');
     }
 
-    public function info_table($table,$instance) {
-        $columns = array(
-            'fullname',
-            'applycomment');
+    public function info_table($table, $instance) {
+        $columns = ['fullname', 'applycomment'];
         $headers = array(
             'User', // Magic happens here: The column heading will automatically be set due to column name 'fullname'.
             $instance->customtext2);
@@ -149,7 +147,7 @@ class enrol_apply_renderer extends plugin_renderer_base {
             $body .= '<p>'. get_string('email') .': '.$standarduserfields->email.'</p>';
             $body .= '<p>'. get_string('city') .': '.$standarduserfields->city.'</p>';
             $body .= '<p>'. get_string('country') .': '.$standarduserfields->country.'</p>';
-            if(isset($standarduserfields->lang)){
+            if (isset($standarduserfields->lang)) {
                 $body .= '<p>'. get_string('preferredlanguage') .': '.$standarduserfields->lang.'</p>';
             }
             $body .= '<p>'. get_string('description') .': '.$standarduserfields->description_editor['text'].'</p>';

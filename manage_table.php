@@ -33,8 +33,6 @@ class enrol_apply_manage_table extends table_sql {
     public function __construct($enrolid = null) {
         parent::__construct('enrol_apply_manage_table');
 
-        global $DB;
-
         $sqlwhere = 'ue.status != 0';
         $sqlparams = array();
         if ($enrolid != null) {
@@ -64,18 +62,18 @@ class enrol_apply_manage_table extends table_sql {
      * @param $row array the data for this row. Note (Johannes): this is actually an object with all sql columns.
      * @return string added to the class="" attribute of the tr.
      */
-    public function get_row_class($row) {
+    public function get_row_class($row): string {
         if ($row->enrolstatus == 2) {
             return 'enrol_apply_waitinglist_highlight';
         }
         return '';
     }
 
-    public function col_checkboxcolumn($row) {
+    public function col_checkboxcolumn($row): string {
         return html_writer::checkbox('userenrolments[]', $row->userenrolmentid, false);
     }
 
-    public function col_fullname($row) {
+    public function col_fullname($row): string {
         // The $row variable contains all user fields, see sql query.
         global $OUTPUT;
         $col = $OUTPUT->user_picture($row, array('popup' => true));

@@ -20,11 +20,16 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author     Johannes Burk <johannes.burk@sudile.com>
  */
-
-defined('MOODLE_INTERNAL') || die;
-
-function xmldb_enrol_apply_upgrade($oldversion) {
-    global $CFG, $DB;
+/**
+ * @param $oldversion
+ * @return bool
+ * @throws ddl_exception
+ * @throws dml_exception
+ * @throws downgrade_exception
+ * @throws upgrade_exception
+ */
+function xmldb_enrol_apply_upgrade($oldversion): bool {
+    global $DB;
 
     $dbman = $DB->get_manager();
 
@@ -54,9 +59,9 @@ function xmldb_enrol_apply_upgrade($oldversion) {
     if ($oldversion < 2016042202) {
         // Invert settings for showing standard and extra user profile fields.
         $enrolapply = enrol_get_plugin('apply');
-        $showstandarduserprofile = $enrolapply->get_config('show_standard_user_profile') == 0 ? true : false;
+        $showstandarduserprofile = $enrolapply->get_config('show_standard_user_profile') == 0;
         $enrolapply->set_config('show_standard_user_profile', $showstandarduserprofile);
-        $showextrauserprofile = $enrolapply->get_config('show_extra_user_profile') == 0 ? true : false;
+        $showextrauserprofile = $enrolapply->get_config('show_extra_user_profile') == 0;
         $enrolapply->set_config('show_extra_user_profile', $showextrauserprofile);
 
         $instances = $DB->get_records('enrol', array('enrol' => 'apply'));
@@ -112,20 +117,20 @@ function xmldb_enrol_apply_upgrade($oldversion) {
 
     if ($oldversion < 2021120501) {
 
-        // Define table
+        // Define table.
         $table = new xmldb_table('enrol_apply_groups');
 
-        // Adding fields
+        // Adding fields.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null);
         $table->add_field('enrolid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'id');
         $table->add_field('groupid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'id');
 
-        // Adding keys
+        // Adding keys.
         $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
         $table->add_key('enrol', XMLDB_KEY_FOREIGN, ['enrolid'], 'enrol', ['id']);
         $table->add_key('group', XMLDB_KEY_FOREIGN, ['groupid'], 'groups', ['id']);
 
-        // Create table if not exist
+        // Create table if not exist.
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
         }
@@ -142,7 +147,5 @@ function xmldb_enrol_apply_upgrade($oldversion) {
             array('enrol' => 'apply')
         );
     }
-
     return true;
-
 }

@@ -22,8 +22,10 @@
  * @author     Johannes Burk <johannes.burk@sudile.com>
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 /** The user is put onto a waiting list and therefore the enrolment not active (used in user_enrolments->status) */
-define('ENROL_APPLY_USER_WAIT', 2);
+const ENROL_APPLY_USER_WAIT = 2;
 require_once($CFG->dirroot.'/group/lib.php');
 
 class enrol_apply_plugin extends enrol_plugin {
@@ -33,16 +35,16 @@ class enrol_apply_plugin extends enrol_plugin {
      * @param object $course
      * @return int id of new instance
      */
-    public function add_default_instance($course) {
+    public function add_default_instance($course): int {
         $fields = $this->get_instance_defaults();
         return $this->add_instance($course, $fields);
     }
 
-    public function allow_unenrol(stdClass $instance) {
+    public function allow_unenrol(stdClass $instance): bool {
         // Users with unenrol cap may unenrol other users manually.
         return true;
     }
-    public function roles_protected() {
+    public function roles_protected(): bool {
         // Users may tweak the roles later.
         return false;
     }
@@ -57,23 +59,8 @@ class enrol_apply_plugin extends enrol_plugin {
         }
         return true;
     }
-    /**
-     * Prevent to unenrol an user with a pending application
-     *
-     * @param stdClass $instance course enrol instance
-     * @param stdClass $ue record from user_enrolments table, specifies user
-     * @return bool
-     */
-    public function allow_unenrol_user(stdClass $instance, stdClass $ue) {
-        global $DB;
-        /*
-        if ($DB->record_exists('enrol_apply_applicationinfo', ['userenrolmentid' => $ue->id])) {
-            return false; // This line cause some issues with the unenrol of some users without resolving the application first.
-        }
-        */
-        return parent::allow_unenrol_user($instance, $ue);
-    }
-    public function allow_manage(stdClass $instance) {
+
+    public function allow_manage(stdClass $instance): bool {
         // Users with manage cap may tweak period and status.
         return true;
     }
@@ -83,17 +70,18 @@ class enrol_apply_plugin extends enrol_plugin {
      * @param int $courseid
      * @return moodle_url page url
      */
-    public function get_newinstance_link($courseid) {
-        $context = context_course::instance($courseid, MUST_EXIST);
+    public function get_newinstance_link($courseid): ?moodle_url {
+        $context = context_course::instance($courseid);
 
-        if (!has_capability('moodle/course:enrolconfig', $context) or !has_capability('enrol/apply:config', $context)) {
+        if (!has_capability('moodle/course:enrolconfig', $context) ||
+            !has_capability('enrol/apply:config', $context)) {
             return null;
         }
         return new moodle_url('/enrol/apply/edit.php', array('courseid' => $courseid));
     }
 
-    public function enrol_page_hook(stdClass $instance) {
-        global $CFG, $OUTPUT, $SESSION, $USER, $DB;
+    public function enrol_page_hook(stdClass $instance): ?string {
+        global $CFG, $OUTPUT, $USER, $DB;
 
         if (isguestuser()) {
             // Can not enrol guest!
@@ -114,7 +102,9 @@ class enrol_apply_plugin extends enrol_plugin {
             $count = $DB->count_records('user_enrolments', array('enrolid' => $instance->id));
             if ($count >= $instance->customint3) {
                 // Bad luck, no more self enrolments here.
-                return '<div class="alert alert-error">'.get_string('maxenrolledreached_left', 'enrol_apply')." (".$count.") ".get_string('maxenrolledreached_right', 'enrol_apply').'</div>';
+                return '<div class="alert alert-error">'.
+                    get_string('maxenrolledreached_left', 'enrol_apply')." (".$count.") ".
+                    get_string('maxenrolledreached_right', 'enrol_apply').'</div>';
             }
         }
 
@@ -127,9 +117,9 @@ class enrol_apply_plugin extends enrol_plugin {
             if ($data->instance == $instance->id) {
                 $timestart = time();
 
-                // Start modification
+                // Start modification.
                 $timeend = $timestart + $instance->enrolperiod;
-                // End modification
+                // End modification.
 
                 $roleid = $instance->roleid;
 
@@ -143,18 +133,18 @@ class enrol_apply_plugin extends enrol_plugin {
                 $applicationinfo = new stdClass();
                 $applicationinfo->userenrolmentid = $userenrolment->id;
                 // Opt_comment
-                // Start modification
+                // Start modification.
                 if (isset($data->applydescription)) {
                     $applicationinfo->comment = $data->applydescription;
                 } else {
                     $applicationinfo->comment = '';
                 }
 
-                // End modification
+                // End modification.
                 $DB->insert_record('enrol_apply_applicationinfo', $applicationinfo, false);
 
                 // Adding groups to the user
-                // Start modification
+                // Start modification.
                 $groups = $DB->get_records(
                     'enrol_apply_groups',
                     array('enrolid' => $instance->id),
@@ -166,13 +156,13 @@ class enrol_apply_plugin extends enrol_plugin {
                 foreach ($groups as $value) {
                     groups_add_member($value->groupid, $USER->id);
                 }
-                // End modification
+                // End modification.
 
 
                 $this->send_application_notification($instance, $USER->id, $data);
 
                 $notification = $OUTPUT->notification(get_string('notification', 'enrol_apply'), 'notifysuccess');
-                $button = $OUTPUT->single_button(new moodle_url('/course/view.php', array('id'=> $instance->courseid)),
+                $button = $OUTPUT->single_button(new moodle_url('/course/view.php', array('id' => $instance->courseid)),
                     get_string('continue'));
                 return $notification . $button;
             }
@@ -183,7 +173,7 @@ class enrol_apply_plugin extends enrol_plugin {
         return $OUTPUT->box($output);
     }
 
-    public function get_action_icons(stdClass $instance) {
+    public function get_action_icons(stdClass $instance): array {
         global $OUTPUT;
 
         if ($instance->enrol !== 'apply') {
@@ -226,7 +216,7 @@ class enrol_apply_plugin extends enrol_plugin {
      * @param  stdClass $instance
      * @return bool
      */
-    public function can_hide_show_instance($instance) {
+    public function can_hide_show_instance($instance): bool {
             $context = context_course::instance($instance->courseid);
             return has_capability('enrol/apply:config', $context);
     }
@@ -237,7 +227,7 @@ class enrol_apply_plugin extends enrol_plugin {
      * @param stdClass $instance
      * @return bool
      */
-    public function can_delete_instance($instance) {
+    public function can_delete_instance($instance): bool {
             $context = context_course::instance($instance->courseid);
             return has_capability('enrol/apply:config', $context);
     }
@@ -261,7 +251,7 @@ class enrol_apply_plugin extends enrol_plugin {
         }
     }
 
-    public function get_user_enrolment_actions(course_enrolment_manager $manager, $ue) {
+    public function get_user_enrolment_actions(course_enrolment_manager $manager, $ue): array {
         $actions = array();
         $context = $manager->get_context();
         $instance = $ue->enrolmentinstance;
@@ -277,7 +267,12 @@ class enrol_apply_plugin extends enrol_plugin {
         }
         if ($this->allow_manage($instance) && has_capability("enrol/apply:manage", $context)) {
             $url = new moodle_url('/enrol/editenrolment.php', $params);
-            $actions[] = new user_enrolment_action(new pix_icon('t/edit', ''), get_string('edit'), $url, array('class'=>'editenrollink', 'rel'=>$ue->id));
+            $actions[] = new user_enrolment_action(
+                new pix_icon('t/edit', ''),
+                get_string('edit'),
+                $url,
+                array('class' => 'editenrollink', 'rel' => $ue->id)
+            );
         }
         return $actions;
     }
@@ -286,7 +281,7 @@ class enrol_apply_plugin extends enrol_plugin {
      * Returns defaults for new instances.
      * @return array
      */
-    public function get_instance_defaults() {
+    public function get_instance_defaults(): array {
         $fields = array();
         $fields['status']          = $this->get_config('status');
         $fields['roleid']          = $this->get_config('roleid', 0);
@@ -331,7 +326,13 @@ class enrol_apply_plugin extends enrol_plugin {
                 $userenrolment->timeend = $userenrolment->timestart + $instance->enrolperiod;
             }
 
-            $this->update_user_enrol($instance, $userenrolment->userid, ENROL_USER_ACTIVE, $userenrolment->timestart, $userenrolment->timeend);
+            $this->update_user_enrol(
+                $instance,
+                $userenrolment->userid,
+                ENROL_USER_ACTIVE,
+                $userenrolment->timestart,
+                $userenrolment->timeend
+            );
             $DB->delete_records('enrol_apply_applicationinfo', array('userenrolmentid' => $enrol));
 
             $this->notify_applicant(
@@ -581,8 +582,6 @@ class enrol_apply_plugin extends enrol_plugin {
     }
 
     public function restore_instance(restore_enrolments_structure_step $step, stdClass $data, $course, $oldid) {
-        global $DB, $CFG;
-
         $data->customint1 = $step->get_mappingid('role', $data->customint1, null);
 
         $instanceid = $this->add_instance($course, (array)$data);
@@ -595,7 +594,7 @@ class enrol_apply_plugin extends enrol_plugin {
         $this->enrol_user($instance, $userid, null, $data->timestart, $data->timeend, $oldinstancestatus);
     }
 
-    // Start modification
+    // Start modification.
 
     /**
      * Returns the user who is responsible for self enrolments in given instance.
@@ -607,10 +606,10 @@ class enrol_apply_plugin extends enrol_plugin {
      * @param int $instanceid enrolment instance id
      * @return stdClass user record
      */
-    protected function get_enroller($instanceid) {
+    protected function get_enroller($instanceid): stdClass {
         global $DB;
 
-        if ($this->lasternollerinstanceid == $instanceid and $this->lasternoller) {
+        if ($this->lasternollerinstanceid == $instanceid && $this->lasternoller) {
             return $this->lasternoller;
         }
 
@@ -630,7 +629,7 @@ class enrol_apply_plugin extends enrol_plugin {
         return $this->lasternoller;
     }
 
-    // End modification
+    // End modification.
 
 
     /**

@@ -22,13 +22,13 @@
  * @author     Johannes Burk <johannes.burk@sudile.com>
  */
 
-use mod_forum\local\exporters\group;
-
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir.'/formslib.php');
 
 class enrol_apply_edit_form extends moodleform {
+
+    // TODO refactor title_customtext2 into titlecustomtext2.
 
     protected function definition() {
         global $DB;
@@ -61,11 +61,10 @@ class enrol_apply_edit_form extends moodleform {
         $mform->addElement('select', 'roleid', get_string('defaultrole', 'role'), $roles);
         $mform->setDefault('roleid', $plugin->get_config('roleid'));
 
+        // Add fields for group affectation and enrol duration.
+        // Start modification.
 
-        // Add fields for group affectation and enrol duration
-        // Start modification
-
-        // Group affectation field
+        // Group affectation field.
         $courseid = required_param('courseid', PARAM_INT);
         $groups = groups_get_all_groups($courseid);
 
@@ -73,7 +72,6 @@ class enrol_apply_edit_form extends moodleform {
         foreach ($groups as $value) {
             $groups2[$value->id] = $value->name;
         }
-
 
         $groupselector = $mform->addElement('autocomplete', 'groupselect', get_string('group', 'enrol_apply'), $groups2);
         $groupselector->setMultiple(true);
@@ -88,17 +86,17 @@ class enrol_apply_edit_form extends moodleform {
         );
         $defaults = array();
         foreach ($contains as $value) {
-            array_push($defaults, $value->groupid);
+            $defaults[] = $value->groupid;
         }
         $groupselector->setSelected($defaults);
 
-        // Enrol duration fields
+        // Enrol duration fields.
         $options = array('optional' => true, 'defaultunit' => 86400);
         $mform->addElement('duration', 'enrolperiod', get_string('defaultperiod', 'enrol_apply'), $options);
         $mform->setDefault('enrolperiod', $plugin->get_config('enrolperiod'));
         $mform->addHelpButton('enrolperiod', 'defaultperiod', 'enrol_apply');
 
-        // Information field
+        // Information field.
 
         $options = array(
             0 => get_string('no'),
@@ -106,7 +104,7 @@ class enrol_apply_edit_form extends moodleform {
             2 => get_string('expirynotifyall', 'enrol_apply')
         );
         if (isset($instance->notifyall)) {
-            if ($instance->notifyall and $instance->expirynotify) {
+            if ($instance->notifyall && $instance->expirynotify) {
                 $instance->expirynotify = 2;
             }
             unset($instance->notifyall);
@@ -115,7 +113,7 @@ class enrol_apply_edit_form extends moodleform {
         $mform->addElement('select', 'expirynotify', get_string('expirynotify', 'core_enrol'), $options);
         $mform->addHelpButton('expirynotify', 'expirynotify', 'core_enrol');
 
-        // Notification threshold
+        // Notification threshold.
         $options = array('optional' => false, 'defaultunit' => 86400);
         $mform->addElement('duration', 'expirythreshold', get_string('expirythreshold', 'core_enrol'), $options);
         $mform->addHelpButton('expirythreshold', 'expirythreshold', 'core_enrol');
@@ -125,12 +123,12 @@ class enrol_apply_edit_form extends moodleform {
             $mform->setDefault('expirythreshold', 86400);
         }
 
-        // End modification
+        // End modification.
 
         $mform->addElement('textarea', 'customtext1', get_string('editdescription', 'enrol_apply'));
 
-        // Add checkbox for optionnal commentary zone
-        // Start modification
+        // Add checkbox for optionnal commentary zone.
+        // Start modification.
         $options = array(
             1 => get_string('yes'),
             0 => get_string('no'),
@@ -138,12 +136,10 @@ class enrol_apply_edit_form extends moodleform {
         $mform->addElement('select', 'customint7', get_string('opt_commentaryzone', 'enrol_apply'), $options);
         $mform->setDefault('customint7', 0);
         $mform->addHelpButton('customint7', 'opt_commentaryzone', 'enrol_apply');
-        // End modification
+        // End modification.
 
-
-
-        //new added requirement_20190110
-        //$title_customtext2 = str_replace("{replace_title}",$instance->customtext2,get_string('custom_label', 'enrol_apply'));
+        // New added requirement_20190110.
+        // $title_customtext2 = str_replace("{replace_title}",$instance->customtext2,get_string('custom_label', 'enrol_apply'));.
         $title_customtext2 = get_string('custom_label', 'enrol_apply');
         $mform->addElement('text', 'customtext2', $title_customtext2);
         $mform->setDefault('customtext2', "Comment");
@@ -167,14 +163,12 @@ class enrol_apply_edit_form extends moodleform {
         $select = $mform->addElement('select', 'notify', get_string('notify_desc', 'enrol_apply'), $choices);
         $select->setMultiple(true);
         $userid = $DB->get_field('enrol', 'customtext3', array('id' => $instance->id), IGNORE_MISSING);
-        if(!empty($userid)) {
-            if($userid == '$@ALL@$') {
+        if (!empty($userid)) {
+            if ($userid == '$@ALL@$') {
                 $select->setSelected('$@ALL@$');
-            }
-            else if($userid == '$@NONE@$') {
+            } else if ($userid == '$@NONE@$') {
                 $select->setSelected('$@NONE@$');
-            }
-            else {
+            } else {
                 $userid = explode(",", $userid);
                 $select->setSelected($userid);
             }
@@ -190,7 +184,6 @@ class enrol_apply_edit_form extends moodleform {
         $mform->setType('courseid', PARAM_INT);
 
         $this->add_action_buttons(true, ($instance->id ? null : get_string('addinstance', 'enrol')));
-        //echo "<pre>";print_r($instance);exit;
         $this->set_data($instance);
     }
 

@@ -29,6 +29,12 @@ require_once($CFG->dirroot.'/user/editlib.php');
 require_once($CFG->dirroot.'/user/profile/lib.php');
 
 class enrol_apply_apply_form extends moodleform {
+
+    // TODO Fix php docs.
+    // TODO check duplicated codes.
+    // TODO remove all unnecessary comments.
+
+    /** @var $instance  */
     protected $instance;
 
     /**

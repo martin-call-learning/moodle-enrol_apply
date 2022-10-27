@@ -18,4 +18,4 @@ Users will be informed by mail as soon as their course application has been appr
 ## Install from zip
 * download zip file from github: https://github.com/emeneo/apply/archive/master.zip
 * unpack zip file to /path/to/moodle/enrol/
-* navigate on your moodle page to admin --> notifivations and follow the instructions
+* navigate on your moodle page to admin --> notifications and follow the instructions
